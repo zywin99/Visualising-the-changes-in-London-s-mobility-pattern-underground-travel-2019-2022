@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Chart of Passenger Flow for Each Cluster in 2022</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        .line {
+            fill: none;
+            stroke-width: 2px;
+        }
+        .axis-label {
+            font-size: 12px;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+        }
+        .button-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            display: inline-block;
+            vertical-align: top;
+            width: 45%; /* Adjust width to fit two charts side by side */
+        }
+        .legend {
+            font-size: 12px;
+            text-anchor: start;
+        }
+        .legend-rect {
+            width: 15px;
+            height: 15px;
+            stroke-width: 2;
+        }
+        .legend-text {
+            font-size: 12px;
+        }
+        svg {
+            display: block;
+            margin: 0 auto;
+        }
+        select {
+            width: auto;
+            padding: 5px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .cluster-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <button onclick="updateCharts('0')">Cluster 0</button>
+        <button onclick="updateCharts('1')">Cluster 1</button>
+        <button onclick="updateCharts('2')">Cluster 2</button>
+        <button onclick="updateCharts('3')">Cluster 3</button>
+        <button onclick="updateCharts('4')">Cluster 4</button>
+        <button onclick="updateCharts('5')">Cluster 5</button>
+        <button onclick="updateCharts('6')">Cluster 6</button>
+    </div>
+    <div id="charts">
+        <div id="entry-chart" class="chart-container">
+            <h3 class="chart-title">2022 Entry Data</h3>
+            <svg id="entry-svg" width="600" height="400"></svg>
+        </div>
+        <div id="exit-chart" class="chart-container">
+            <h3 class="chart-title">2022 Exit Data</h3>
+            <svg id="exit-svg" width="600" height="400"></svg>
+        </div>
+    </div>
+    <div class="cluster-info">
+        <span>Stations in Cluster:</span>
+        <select id="entry-legend"></select>
+    </div>
+    <button class="back-button" onclick="window.location.href='main.html'">BACK</button>
+
+    <script>
+        const margin = {top: 20, right: 30, bottom: 40, left: 50};
+        const width = 600 - margin.left - margin.right; // Adjusted width
+        const height = 400 - margin.top - margin.bottom;
+
+        const xScale = d3.scalePoint().range([0, width]);
+        const yScale = d3.scaleLinear().range([height, 0]).domain([-1, 3]);
+
+        const line = d3.line()
+            .x(d => xScale(d[0].split("-")[0])) // Split the time range and take the start time
+            .y(d => yScale(d[1]));
+
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+        let entryData, exitData;
+
+        d3.csv("entryline2022.csv").then(function(data) {
+            entryData = data;
+            data.forEach(d => {
+                d.Cluster = +d.Cluster;
+                for (let key in d) {
+                    if (key !== 'Station' && key !== 'Cluster' && key !== 'Line' && key !== 'Longitude') {
+                        d[key] = +d[key];
+                    }
+                }
+            });
+            initializeChart('#entry-svg', data);
+        });
+
+        d3.csv("exitline2022.csv").then(function(data) {
+            exitData = data;
+            data.forEach(d => {
+                d.Cluster = +d.Cluster;
+                for (let key in d) {
+                    if (key !== 'Station' && key !== 'Cluster' && key !== 'Line' && key !== 'Longitude') {
+                        d[key] = +d[key];
+                    }
+                }
+            });
+            initializeChart('#exit-svg', data);
+        });
+
+        function initializeChart(svgId, data) {
+            const svg = d3.select(svgId)
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const timeColumns = data.columns.slice(5).map(d => d.split("-")[0]); // Extract start times starting from the 6th column
+            xScale.domain(timeColumns);
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .attr("class", "x-axis")
+                .call(d3.axisBottom(xScale));
+
+            svg.append("g")
+                .attr("class", "y-axis")
+                .call(d3.axisLeft(yScale));
+
+            svg.append("g").attr("class", "lines");
+
+            svg.append("line")
+                .attr("class", "zero-line")
+                .attr("x1", 0)
+                .attr("x2", width)
+                .attr("y1", yScale(0))
+                .attr("y2", yScale(0))
+                .attr("stroke", "black")
+                .attr("stroke-width", 1);
+        }
+
+        function updateCharts(cluster) {
+            updateChart('#entry-svg', '#entry-legend', entryData, cluster);
+            updateChart('#exit-svg', '#exit-legend', exitData, cluster);
+        }
+
+        function updateChart(svgId, legendId, data, cluster) {
+            const filteredData = data.filter(d => d.Cluster == cluster);
+
+            
+            const deviations = filteredData.map(station => {
+                const stationData = Object.entries(station).slice(5).map(d => d[1]);
+                const mean = d3.mean(stationData);
+                const deviation = d3.sum(stationData.map(value => Math.abs(value - mean)));
+                return { station, deviation };
+            });
+
+            // Z-score
+            const meanDeviation = d3.mean(deviations, d => d.deviation);
+            const stdDeviation = d3.deviation(deviations, d => d.deviation);
+
+            const cleanedData = deviations.filter(d => {
+                const zScore = (d.deviation - meanDeviation) / stdDeviation;
+                return Math.abs(zScore) <= 2;
+            }).map(d => d.station);
+
+            const svg = d3.select(svgId);
+            const linesGroup = svg.select(".lines");
+
+            linesGroup.selectAll(".line").remove();
+
+            cleanedData.forEach((station, index) => {
+                const stationData = Object.entries(station).slice(5).map(d => [d[0].split("-")[0], d[1]]); // Split the time range and take the start time
+                linesGroup.append("path")
+                    .datum(stationData)
+                    .attr("class", "line")
+                    .attr("d", line)
+                    .attr("stroke", color(index));
+            });
+
+            updateLegend(legendId, cleanedData);
+        }
+
+        function updateLegend(legendId, data) {
+            const legendSelect = d3.select(legendId);
+            legendSelect.selectAll("option").remove(); // Clear existing legend options
+
+            data.forEach((d, i) => {
+                legendSelect.append("option")
+                    .attr("value", d.Station)
+                    .attr("style", `color: ${color(i)}`)
+                    .text(d.Station);
+            });
+        }
+    </script>
+</body>
+</html>

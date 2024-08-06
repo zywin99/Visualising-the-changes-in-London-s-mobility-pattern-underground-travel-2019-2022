@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Passenger Flow in Different Stations</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+        }
+        .origin-marker {
+            background-color: black;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+        }
+        .destination-marker {
+            background-color: red;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+        }
+        .button-group {
+            margin-bottom: 10px;
+        }
+        .button-group button {
+            margin-right: 5px;
+        }
+        .button-group .selected {
+            background-color: #007BFF;
+            color: white;
+        }
+        .back-button-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="back-button-container">
+        <button id="backButton">BACK</button>
+    </div>
+    <div>
+        <label for="year">Year:</label>
+        <div id="year" class="button-group"></div>
+        
+        <label for="timePeriod">Time Period:</label>
+        <div id="timePeriod" class="button-group"></div>
+        
+        <label for="station">Station:</label>
+        <div id="station" class="button-group"></div>
+        
+        <label for="type">Type:</label>
+        <div id="type" class="button-group">
+            <button id="outButton" class="selected">OUT</button>
+            <button id="inButton">IN</button>
+        </div>
+    </div>
+    <div id="map"></div>
+    
+    <script src="script.js"></script>
+    <script>
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.location.href = 'main.html';
+        });
+    </script>
+</body>
+</html>

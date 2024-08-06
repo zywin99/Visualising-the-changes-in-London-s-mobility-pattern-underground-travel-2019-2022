@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Station Function Changes Bubble Between 2019 and 2022</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .bubble {
+            stroke: #000;
+            stroke-width: 1px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        .bubble:hover {
+            opacity: 1;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            padding: 5px;
+            font-size: 12px;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 3px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .axis-label {
+            font-size: 14px;
+        }
+        .back-button {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <svg id="bubble-chart" width="800" height="500"></svg>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <div class="back-button">
+        <a href="main.html" class="button">Back</a>
+    </div>
+
+    <script>
+        const data = [
+            {year: '2019', type: 'Residential', count: 77},
+            {year: '2019', type: 'Work', count: 15},
+            {year: '2019', type: 'Mixed', count: 35},
+            {year: '2022', type: 'Residential', count: 71},
+            {year: '2022', type: 'Work', count: 21},
+            {year: '2022', type: 'Mixed', count: 38}
+        ];
+
+        // Calculate total counts for percentages
+        const total2019 = data.filter(d => d.year === '2019').reduce((sum, d) => sum + d.count, 0);
+        const total2022 = data.filter(d => d.year === '2022').reduce((sum, d) => sum + d.count, 0);
+
+        data.forEach(d => {
+            if (d.year === '2019') {
+                d.percentage = Math.round((d.count / total2019) * 100);
+            } else {
+                d.percentage = Math.round((d.count / total2022) * 100);
+            }
+        });
+
+        const svg = d3.select("#bubble-chart");
+        const margin = {top: 40, right: 150, bottom: 50, left: 70};
+        const width = +svg.attr("width") - margin.left - margin.right;
+        const height = +svg.attr("height") - margin.top - margin.bottom;
+        const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const x = d3.scalePoint()
+            .domain(data.map(d => d.year))
+            .range([0, width])
+            .padding(0.5);
+
+        const y = d3.scalePoint()
+            .domain(data.map(d => d.type))
+            .range([height, 0])
+            .padding(0.5);
+
+        const r = d3.scaleSqrt()
+            .domain([0, d3.max(data, d => d.count)])
+            .range([0, 40]);
+
+        const color = d3.scaleOrdinal()
+            .domain(data.map(d => d.type))
+            .range(d3.schemeCategory10);
+
+        const tooltip = d3.select("#tooltip");
+
+        g.selectAll("circle")
+            .data(data)
+            .enter().append("circle")
+            .attr("class", "bubble")
+            .attr("cx", d => x(d.year))
+            .attr("cy", d => y(d.type))
+            .attr("r", d => r(d.count))
+            .attr("fill", d => color(d.type))
+            .on("mouseover", (event, d) => {
+                tooltip.transition().duration(200).style("opacity", .9);
+                tooltip.html(`Year: ${d.year}<br>Type: ${d.type}<br>Count: ${d.count}`)
+                    .style("left", (event.pageX + 5) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", () => {
+                tooltip.transition().duration(500).style("opacity", 0);
+            });
+
+        // Add percentage labels inside the bubbles
+        g.selectAll("text")
+            .data(data)
+            .enter().append("text")
+            .attr("x", d => x(d.year))
+            .attr("y", d => y(d.type))
+            .attr("dy", ".3em")
+            .attr("text-anchor", "middle")
+            .attr("fill", "#fff")
+            .attr("font-size", "12px")
+            .text(d => `${d.percentage}%`);
+
+        const xAxis = d3.axisBottom(x);
+        const yAxis = d3.axisLeft(y);
+
+        g.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", `translate(0,${height})`)
+            .call(xAxis)
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("x", width / 2)
+            .attr("y", 40)
+            .attr("fill", "#000")
+            .text("Year");
+
+        g.append("g")
+            .attr("class", "axis axis--y")
+            .call(yAxis)
+            .append("text")
+            .attr("class", "axis-label")
+            .attr("x", -height / 2)
+            .attr("y", -50)
+            .attr("transform", "rotate(-90)")
+            .attr("fill", "#000")
+            .text("Station Type");
+
+        const legend = g.append("g")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+            .attr("text-anchor", "start")
+            .attr("transform", `translate(${width + 20}, 0)`)
+            .selectAll("g")
+            .data(data.map(d => d.type).filter((v, i, a) => a.indexOf(v) === i))
+            .enter().append("g")
+            .attr("transform", (d, i) => `translate(0,${i * 20})`);
+
+        legend.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 9)
+            .attr("r", 5)
+            .attr("fill", color);
+
+        legend.append("text")
+            .attr("x", 15)
+            .attr("y", 14)
+            .text(d => d + " Stations");
+    </script>
+</body>
+</html>

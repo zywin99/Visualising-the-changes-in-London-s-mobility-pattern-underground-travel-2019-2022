@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>London Underground Map</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            position: relative; /* back */
+                }
+        .back-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: white;
+            color: black;
+            border: 1px solid black;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .back-button:hover {
+            background-color: #f0f0f0;
+        }
+
+
+        h1 {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        #controls {
+            width: 100%;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-content {
+            display: flex;
+            width: 100%;
+            height: calc(100vh - 100px); /* Subtracting space for header and controls */
+        }
+
+        .container {
+            width: 100%; /* Adjust width */
+            height: 100%; /* Adjust height */
+            overflow: auto; /* Allow scrolling */
+            display: flex;
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+            transform: translateX(10%); /* Shift left */
+            background: white; /* Temporary background for boundary recognition */
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            background: white; /* Temporary background for boundary recognition */
+        }
+
+        /* blink */
+        @keyframes blink {
+            0%, 50%, 100% {
+                opacity: 1;
+            }
+            25%, 75% {
+                opacity: 0;
+            }
+        }
+
+        .blink {
+            animation: blink 1s linear infinite;
+        }
+
+        /* glow */
+        .highlight {
+            filter: url(#glow);
+        }
+
+        .highlighted-rect {
+            fill: red;
+            width: 100px;
+            height: 100px;
+        }
+
+
+    </style>
+</head>
+<body>
+    <h1>London Underground Map</h1> <!-- name -->
+    <button class="back-button" onclick="window.location.href='main.html'">BACK</button>
+
+    <div id="controls">
+        <select id="line-selector">
+            <option value="">Select The Line</option>
+            <option value="cls-48">Elizabeth Line</option>
+            <option value="cls-47">Waterloo and City Line</option>
+            <option value="cls-53">Jubilee Line</option>
+            <option value="cls-41">Hammersmith and City Line</option>
+            <option value="cls-40">Circle Line</option>
+            <option value="cls-39">Central Line</option>
+            <option value="cls-43">Northern Line</option>
+            <option value="cls-51">Victoria Line</option>
+            <option value="cls-46">Bakerloo Line</option>
+            <option value="cls-44">Piccadilly Line</option>
+            <option value="cls-52">DLR Line</option>
+            <option value="cls-50">District Line</option>
+            <option value="cls-49">Metropolitan Line</option>
+            <option value="cls-42">Overground Line</option>
+        </select>
+    </div>
+    <div class="main-content">
+        <div class="container" id="svg-container"></div>
+        <div class="right-half"></div> <!-- Right half left blank -->
+    </div>
+
+    <svg width="0" height="0">
+        <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+    </svg>
+
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="Sche.js"></script>
+
+</body>
+</html>

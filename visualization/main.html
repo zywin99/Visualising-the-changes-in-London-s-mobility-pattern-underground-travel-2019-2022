@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>London Tube Map</title>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .button-group {
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            margin: 15px; /* Adjusted for better spacing */
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .option-button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+        .popup {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .top-buttons, .bottom-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px; /* Adjusted for better spacing */
+        }
+        .header-button {
+            margin-bottom: 40px; /* Adjusted for better spacing */
+        }
+        .center-button {
+            margin-top: 30px; /* Adjusted for better spacing */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>London Underground Map</h1>
+        <div class="header-button">
+            <button class="button" onclick="window.location.href='london_underground_map.html'">Map of London Underground</button>
+        </div>
+        <div class="top-buttons">
+            <button class="button" onclick="window.location.href='passenger_flow_line.html'">Passenger Flow in Different Lines</button>
+            <button class="button" onclick="window.location.href='passenger_flow_station.html'">Passenger Flow in Different Stations</button>
+        </div>
+        <div class="bottom-buttons">
+            <button class="button" onclick="showOptions('option1')">Cluster Stations Map with POIs</button>
+            <button class="button" onclick="showOptions('option2')">Chord Diagram of Clustered Stations</button>
+            <button class="button" onclick="showOptions('option3')">Line Chart of Clustered Stations</button>
+        </div>
+        
+        <!-- New button for Changes in Station Functions between 2019 and 2022 -->
+        <div class="center-button">
+            <button class="button" onclick="window.location.href='station_function_changes.html'">Changes in Station Functions between 2019 and 2022</button>
+        </div>
+    </div>
+
+    <!-- Popup for selecting 2019 or 2022 -->
+    <div id="option1" class="popup hidden">
+        <h2>Choose Year</h2>
+        <button class="option-button" onclick="navigate('cluster_map.html')">2019</button>
+        <button class="option-button" onclick="navigate('cluster_map_2022.html')">2022</button>
+        <button class="option-button" onclick="hideOptions('option1')">Cancel</button>
+    </div>
+    <div id="option2" class="popup hidden">
+        <h2>Choose Year</h2>
+        <button class="option-button" onclick="navigate('cluster_chord.html')">2019</button>
+        <button class="option-button" onclick="navigate('cluster_chord_2022.html')">2022</button>
+        <button class="option-button" onclick="hideOptions('option2')">Cancel</button>
+    </div>
+    <div id="option3" class="popup hidden">
+        <h2>Choose Year</h2>
+        <button class="option-button" onclick="navigate('cluster_line_map.html')">2019</button>
+        <button class="option-button" onclick="navigate('cluster_line_map_2022.html')">2022</button>
+        <button class="option-button" onclick="hideOptions('option3')">Cancel</button>
+    </div>
+
+
+    <script>
+        function showOptions(optionId) {
+            document.getElementById(optionId).classList.remove('hidden');
+        }
+
+        function hideOptions(optionId) {
+            document.getElementById(optionId).classList.add('hidden');
+        }
+
+        function navigate(url) {
+            window.location.href = url;
+        }
+    </script>
+</body>
+</html>

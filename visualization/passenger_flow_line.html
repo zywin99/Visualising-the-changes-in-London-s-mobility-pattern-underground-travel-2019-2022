@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger Flow in Different Lines</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        .line {
+            stroke-width: 2px;
+        }
+        .dot {
+            fill: white;
+            stroke-width: 2px;
+        }
+        .hidden {
+            display: none;
+        }
+        .buttons {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        .chart-container {
+            margin-top: 50px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .chart-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #back-button {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        #back-button:hover {
+            background-color: #e0e0e0;
+        }
+        #legend {
+            position: fixed;
+            top: 30px;
+            right: 50px;
+            background: white;
+            padding: 10px;
+            z-index: 1000;
+        }
+        svg {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="buttons">
+        <button onclick="showChart('2019')">2019</button>
+        <button onclick="showChart('2022')">2022</button>
+    </div>
+
+    <div id="legend"></div> <!-- Legend container -->
+
+    <div id="chart-container-2019" class="chart-container">
+        <div class="chart-title">2019 Passenger Flow</div>
+        <svg id="chart2019" class="chart" width="1000" height="600"></svg>
+    </div>
+    <div id="chart-container-2022" class="chart-container hidden">
+        <div class="chart-title">2022 Passenger Flow</div>
+        <svg id="chart2022" class="chart" width="1000" height="600"></svg>
+    </div>
+
+    <button id="back-button" onclick="window.location.href='main.html'">BACK</button>
+
+    <script>
+        const lineColors = {
+            "Bakerloo": "#B36305",
+            "Central": "#E32017",
+            "H&C and Circle": "#FFD300",
+            "District": "#00782A",
+            "Hammersmith & City": "#F3A9BB",
+            "Jubilee": "#A0A5A9",
+            "Metropolitan": "#9B0056",
+            "Northern": "#000000",
+            "Piccadilly": "#003688",
+            "Victoria": "#0098D4",
+            "Waterloo & City": "#95CDBA",
+            "DLR": "#00A4A7",
+            "Elizabeth Line": "#9364CD",
+            "London Overground": "#E86A10",
+            "London Trams": "#84B817"
+        };
+
+        function showChart(year) {
+            d3.selectAll(".chart-container").classed("hidden", true);
+            d3.select(`#chart-container-${year}`).classed("hidden", false);
+        }
+
+        d3.csv("bar_chart.csv").then(function(data) {
+            const data2019 = data.filter(d => d.Year === "2019");
+            const data2022 = data.filter(d => d.Year === "2022");
+
+            const maxDataValue = d3.max([
+                d3.max(data2019, d => d3.max(["MTT", "FRI", "SAT", "SUN"], key => +d[key])),
+                d3.max(data2022, d => d3.max(["MTT", "FRI", "SAT", "SUN"], key => +d[key]))
+            ]);
+
+            function createChart(data, svgId) {
+                const svg = d3.select(svgId),
+                    margin = {top: 20, right: 30, bottom: 40, left: 70}, // Increase left margin
+                    width = +svg.attr("width") - margin.left - margin.right,
+                    height = +svg.attr("height") - margin.top - margin.bottom,
+                    g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`); // Adjust position
+
+                const time_points = ["MTT", "FRI", "SAT", "SUN"];
+
+                const x = d3.scaleBand()
+                    .domain(time_points)
+                    .rangeRound([0, width])
+                    .paddingInner(0.1);
+
+                const y = d3.scaleLinear()
+                    .domain([0, maxDataValue])
+                    .nice()
+                    .rangeRound([height, 0]);
+
+                g.append("g")
+                    .selectAll("g")
+                    .data(time_points)
+                    .enter().append("g")
+                    .attr("transform", d => `translate(${x(d)},0)`)
+                    .selectAll("line")
+                    .data(d => data.map(line => ({line_name: line["Line Name"], value: +line[d]})))
+                    .enter().append("line")
+                    .attr("class", "line")
+                    .attr("x1", 0)
+                    .attr("x2", 0)
+                    .attr("y1", d => y(0))
+                    .attr("y2", d => y(d.value))
+                    .attr("stroke", d => lineColors[d.line_name])
+                    .attr("stroke-width", 2)
+                    .attr("transform", (d, i) => `translate(${i * 10 + 45},0)`);
+
+                g.append("g")
+                    .selectAll("g")
+                    .data(time_points)
+                    .enter().append("g")
+                    .attr("transform", d => `translate(${x(d)},0)`)
+                    .selectAll(".dot")
+                    .data(d => data.map(line => ({line_name: line["Line Name"], value: +line[d]})))
+                    .enter().append("circle")
+                    .attr("class", "dot")
+                    .attr("cx", 0)
+                    .attr("cy", d => y(d.value))
+                    .attr("r", 5)
+                    .style("fill", "black")
+                    .attr("transform", (d, i) => `translate(${i * 10 + 45},0)`);
+
+                time_points.forEach(point => {
+                    const lineData = data.map(line => ({line_name: line["Line Name"], value: +line[point]}));
+                    g.append("path")
+                        .datum(lineData)
+                        .attr("fill", "none")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", 2)
+                        .attr("d", d3.line()
+                            .x((d, i) => i * 10 + 45)
+                            .y(d => y(d.value))
+                            .curve(d3.curveMonotoneX)
+                        )
+                        .attr("transform", `translate(${x(point)},0)`);
+                });
+
+                g.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", `translate(0,${height})`)
+                    .call(d3.axisBottom(x));
+
+                g.append("g")
+                    .attr("class", "axis")
+                    .call(d3.axisLeft(y).ticks(null, "s"));
+            }
+
+            function createLegend() {
+                const legendContainer = d3.select("#legend");
+                const legendData = Object.keys(lineColors);
+                const legend = legendContainer.append("svg")
+                    .attr("width", 200)
+                    .attr("height", legendData.length * 20);
+
+                const legendGroup = legend.selectAll("g")
+                    .data(legendData)
+                    .enter().append("g")
+                    .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+                legendGroup.append("rect")
+                    .attr("x", 0)
+                    .attr("width", 19)
+                    .attr("height", 19)
+                    .attr("fill", d => lineColors[d]);
+
+                legendGroup.append("text")
+                    .attr("x", 24)
+                    .attr("y", 9.5)
+                    .attr("dy", "0.32em")
+                    .text(d => d);
+            }
+
+            createChart(data2019, "#chart2019");
+            createChart(data2022, "#chart2022");
+            createLegend();
+        }).catch(function(error){
+            console.error('Error loading the CSV file:', error);
+        });
+    </script>
+</body>
+</html>

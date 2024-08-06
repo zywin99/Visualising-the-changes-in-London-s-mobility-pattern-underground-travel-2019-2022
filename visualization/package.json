@@ -1,0 +1,14 @@
+{
+  "name": "@stuwilmur/tube-map-svg-with-zoom-and-pan",
+  "main": "script.js",
+  "version": "223.0.0",
+  "homepage": "https://observablehq.com/@stuwilmur/tube-map-svg-with-zoom-and-pan",
+  "author": {
+    "name": "Stu Murray",
+    "url": "https://observablehq.com/@stuwilmur"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "@observablehq/runtime": "4 - 5"
+  }
+}

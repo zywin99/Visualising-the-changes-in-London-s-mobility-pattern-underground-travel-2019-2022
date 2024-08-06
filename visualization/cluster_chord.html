@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clustered Stations Map with Train Lines</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v1.min.js"></script>
+    <style>
+        .station {
+            stroke: #000;
+            stroke-width: 0.5px;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: auto;
+            height: auto;
+            padding: 4px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        .borough {
+            fill: #ddd;
+            stroke: #333;
+            stroke-width: 0.5px;
+        }
+        .legend-button {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            cursor: pointer;
+        }
+        #container {
+            display: flex;
+        }
+        #map-container, #chart-container {
+            width: 50%;
+            position: relative;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 0px;
+        }
+        #legend, #line-controls {
+            margin-bottom: 20px;
+        }
+        #cluster-select-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #map-title, #chart-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #back-button {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #time-select {
+            margin-bottom: 20px;
+        }
+        .chord path {
+            fill-opacity: .67;
+            stroke: #000;
+            stroke-width: .5px;
+        }
+        .group-label {
+            font-size: 13px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="map-container">
+            <div id="map-title">Cluster Map</div>
+            <svg id="map" width="100%" height="600"></svg>
+        </div>
+        <div id="chart-container">
+            <div id="chart-title">Chord Diagram of OD Data</div>
+            <div id="time-select">
+                <label for="time-period">Select Time Period:</label>
+                <select id="time-period">
+                    <option value="AM Peak">AM Peak</option>
+                    <option value="Midday">Inter Peak</option>
+                    <option value="PM Peak">PM Peak</option>
+                </select>
+            </div>
+            <div id="chart"></div>
+        </div>
+    </div>
+    <div id="controls">
+        <div id="legend"></div>
+        <div id="line-controls">
+            <label><input type="checkbox" id="victoria" checked> Victoria</label>
+            <label><input type="checkbox" id="central" checked> Central</label>
+            <label><input type="checkbox" id="northern" checked> Northern</label>
+            <label><input type="checkbox" id="jubilee" checked> Jubilee</label>
+        </div>
+    </div>
+    <button id="back-button" onclick="window.location.href='main.html'">BACK</button>
+    <script src="map.js"></script>
+    <script src="chord.js"></script>
+</body>
+</html>
